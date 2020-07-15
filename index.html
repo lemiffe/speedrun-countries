@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>World Countries Typing Test</title>
+    <style type="text/css">
+        body, button, input, select, textarea {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-size: 17px;
+            line-height: 1.5;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            clear: both;
+        }
+
+        p {
+            margin-bottom: 1.5em;
+        }
+
+        b, strong {
+            font-weight: bold;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #444444;
+        }
+
+        .test-area {
+            margin: 0 auto;
+            max-width: 90%;
+            margin-bottom: 4em;
+            padding: 0 2em;
+        }
+
+        .test-area h1 {
+            font-size: 3em;
+            font-weight: bold;
+            color: #eeeeee;
+            text-align: center;
+        }
+
+        .test-wrapper {
+            border: 10px solid grey;
+            height: 200%;
+            display: flex;
+        }
+
+        #origin-text {
+            margin: 1em 0;
+            margin-top: 30px;
+            padding: 1em 1em 0;
+            background-color: #ededed;
+            position: relative;
+        }
+
+        #origin-text p {
+            margin: 0;
+            padding-bottom: 1em;
+            word-break: break-all;
+        }
+
+        #origin-text p.duplicate {
+            margin: 0;
+            color: #6aab24;
+            position: absolute;
+            top: 0;
+            padding: 1em 1em 0 0;
+        }
+
+        #origin-text p.duplicate .error {
+            border-bottom: solid 2px red;
+            width: 10px;
+            display: inline-block;
+            margin-bottom: -4px;
+        }
+
+        .test-wrapper textarea {
+            flex: 1;
+        }
+
+        .meta {
+            margin-top: 1em;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .timer {
+            font-size: 3em;
+            font-weight: bold;
+            color: #dddddd;
+        }
+
+        .cpm {
+            font-size: 3em;
+            font-weight: bold;
+            color: #dddddd;
+        }
+
+        #reset {
+            padding: .5em 1em;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #E95D0F;
+            background: #ffffff;
+            border: 10px solid #E95D0F;
+        }
+
+        #reset:hover {
+            color: #ffffff;
+            background-color: #E95D0F;
+        }
+    </style>
+</head>
+<body>
+    <main class="main">
+        <section class="test-area">
+            <h1>Type all the Countries in the World</h1>
+            <div id="origin-text">
+                <p class="original"></p>
+                <p class="duplicate"></p>
+            </div><!-- #origin-text -->
+
+            <div class="test-wrapper">
+                <textarea id="test-area" name="textarea" rows="6" placeholder="The clock starts when you start typing"></textarea>
+            </div><!-- .test-wrapper -->
+
+            <div class="meta">
+                <section id="clock">
+                    <div class="timer">00:00:00</div>
+                </section>
+
+                <section id="stats">
+                    <div class="cpm">0 CPM</div>
+                </section>
+
+                <button id="reset">Reset</button>
+            </div><!-- .meta -->
+        </section><!-- .test-area -->
+    </main>
+    <script>
+        const typingTest = "canadausamexicoelsalvadorguatemalahondurasbelizenicaraguapanamacostaricadominicadominicanrepublictrinidadgrenadahaiticubajamaicaantiguabarbadosbahamasstkittsstluciastvincentecuadorperucolombiavenezuelaguyanasurinamebrazilchileargentinaparaguayuruguayboliviaicelandirelandukportugalspainandorrafrancebelgiumluxembourgnetherlandsgermanydenmarknorwayswedenfinlandrussiaukrainebelarusestonialatvialithuaniapolandczechrepublicslovakiahungaryromaniamoldovagreecebulgariaalbanianorthmacedoniakosovomontenegroserbiabosniacroatiasloveniaaustrialiechtensteinmonacoswitzerlanditalyvaticanmaltasanmarinofijiaustralianewzealandpapuanewguineasamoasolomonislandstongatuvaluvanuatupalaunaurumicronesiakiribatimarshallislandstaiwanjapannorthkoreasouthkoreachinamongoliakazakhstankyrgyzstanturkmenistantajikistanuzbekistangeorgiaarmeniaazerbaijancyprusturkeysyriajordanisraellebanonbahrainsaudiarabiayemenomanqataruaekuwaitiraniraqafghanistanpakistanindiabangladeshnepalbhutanmyanmarthailandlaosvietnamcambodiamalaysiaindonesiaphilippinessrilankabruneieasttimorsingaporemaldivessouthafricaeswatinilesothonamibiabotswanazimbabwemozambiqueangolazambiadrccongotanzaniaethiopiakenyasomaliaeritreamadagascarsaotomenigernigeriachadsudansouthsudanegyptlibyatunisiaalgeriamoroccosierraleoneliberiaivorycoastgambiagabonguineaghanamalimalawimauritaniamauritiuscamerooncapeverderwandaugandacarburundidjiboutiburkinafasobenincomorostogosenegalseychellesequatorialguineaguineabissau";
+        //const typingTest = "canadausamexicoelsalvadorguatemalahondurasbelizenicaraguapanamacostaricadominicadominicanrepublictrinidadgrenadahaiticubajamaicaantiguabarbadosbahamasstkittsstluciastvincent";
+        document.querySelector("#origin-text p.original").innerHTML = typingTest;
+
+        const testWrapper = document.querySelector(".test-wrapper");
+        const testArea = document.querySelector("#test-area");
+        const originText = document.querySelector("#origin-text p.original").innerHTML;
+        const resetButton = document.querySelector("#reset");
+        const theTimer = document.querySelector(".timer");
+        const theStats = document.querySelector(".cpm");
+        const duplicateContainer = document.querySelector("#origin-text p.duplicate");
+
+        var timer = [0,0,0,0];
+        var interval;
+        var timerRunning = false;
+
+        // Add leading zero to numbers 9 or below (purely for aesthetics):
+        function leadingZero(time) {
+            if (time <= 9) {
+                time = "0" + time;
+            }
+            return time;
+        }
+
+        // Run a standard minute/second/hundredths timer:
+        function runTimer() {
+            const currentTime = leadingZero(timer[0]) + ":" + leadingZero(timer[1]) + ":" + leadingZero(timer[2]);
+            theTimer.innerHTML = currentTime;
+
+            const totalSeconds = timer[0] * 60 + timer[1];
+            let cpm = testArea.value.length / (totalSeconds / 60);
+            if (cpm < 1 || cpm > 9999) {
+                cpm = 0;
+            }
+            theStats.innerHTML = Math.round(cpm).toString() + " CPM";
+
+            timer[3]++;
+            timer[0] = Math.floor((timer[3]/100)/60);
+            timer[1] = Math.floor((timer[3]/100) - (timer[0] * 60));
+            timer[2] = Math.floor(timer[3] - (timer[1] * 100) - (timer[0] * 6000));
+        }
+
+        function updateMatchedText() {
+            let textEntered = testArea.value;
+            let originTextMatch = originText.substring(0, textEntered.length);
+            let badFrom = -1;
+            if (textEntered.length > 0 && textEntered != originText && textEntered != originTextMatch) {
+                for (let i = 0; i < textEntered.length; i++) {
+                    if (textEntered[i] !== originText[i]) {
+                        badFrom = i;
+                        break;
+                    }
+                }
+            }
+            if (badFrom > -1) {
+                duplicateContainer.innerHTML = textEntered.substring(0, badFrom) + '<span class="error"></span>';
+            } else {
+                duplicateContainer.innerHTML = originTextMatch;
+            }
+        }
+
+        // Match the text entered with the provided text on the page:
+        function spellCheck() {
+            let textEntered = testArea.value;
+            let originTextMatch = originText.substring(0, textEntered.length);
+
+            if (textEntered == originText) {
+                clearInterval(interval);
+                testWrapper.style.borderColor = "#6aab24";
+            } else {
+                if (textEntered == originTextMatch) {
+                    testWrapper.style.borderColor = "#65CCf3";
+                } else {
+                    testWrapper.style.borderColor = "#E95D0F";
+                }
+            }
+
+            // Show matching text (using duplicate green paragraph)
+            updateMatchedText();
+        }
+
+        // Start the timer:
+        function start() {
+            let textEnterdLength = testArea.value.length;
+            if (textEnterdLength === 0 && !timerRunning) {
+                timerRunning = true;
+                interval = setInterval(runTimer, 10);
+            }
+        }
+
+        // Reset everything:
+        function reset() {
+            clearInterval(interval);
+            interval = null;
+            timer = [0,0,0,0];
+            timerRunning = false;
+
+            testArea.value = "";
+            theTimer.innerHTML = "00:00:00";
+            testWrapper.style.borderColor = "grey";
+            
+            // Show matching text (using duplicate green paragraph)
+            updateMatchedText();
+
+            // Focus on the textbox
+            document.getElementById("test-area").focus();
+        }
+
+        // Event listeners for keyboard input and the reset
+        testArea.addEventListener("keypress", start, false);
+        testArea.addEventListener("keyup", spellCheck, false);
+        resetButton.addEventListener("click", reset, false);
+
+        document.getElementById("test-area").focus();
+
+        // Originally from a codepen by Helon Roop: https://codepen.io/lurkaround/pen/BvZQBb
+    </script>
+</body>
+</html>
